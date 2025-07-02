@@ -36,3 +36,7 @@
     transform: rotate(360deg);
   }
 }
+
+.testBox{
+  outline: 5px #282c34;
+}
