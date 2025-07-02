@@ -24,6 +24,7 @@ app.add_middleware(
     allow_headers = ["*"]
 )
 
+
 class LogEntry(BaseModel):
     url: str 
     user: str 
