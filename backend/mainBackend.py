@@ -12,6 +12,7 @@ claude_api_key = os.getenv("CLAUDE_API_KEY") # claude api key
 
 app = FastAPI()
 
+#frontend port
 origins = [
     "http://localhost:3000"
 ]
@@ -23,7 +24,6 @@ app.add_middleware(
     allow_methods = ["*"],
     allow_headers = ["*"]
 )
-
 
 class LogEntry(BaseModel):
     url: str 
@@ -50,7 +50,7 @@ def detect_ai_crawler(user_agent: str) -> Optional[str]:
 #Routes
 @app.get("/")
 def read_root():
-    return "test read route"
+    return "test read route 2"
 
 @app.post("/logs/ingest")
 def ingest_logs(log_batch: LogBatch):
