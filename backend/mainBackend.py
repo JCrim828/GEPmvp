@@ -1,40 +1,36 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
-from dotenv import load_dotenv
-import os
+from sqlalchemy.orm import Session
+from database import SessionLocal, engine
+from models import Base, CrawlerLog
+from claude_api import call_claude
 
-load_dotenv()
-claude_api_key = os.getenv("CLAUDE_API_KEY") # claude api key
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-#frontend port
-origins = [
-    "http://localhost:3000"
-]
-
+origins = ["http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = origins,
-    allow_credentials = True,
-    allow_methods = ["*"],
-    allow_headers = ["*"]
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-class LogEntry(BaseModel):
-    url: str 
-    user: str 
-    access_time: datetime
-    frequency: int
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-class LogBatch(BaseModel):
-    logs: List[LogEntry]
-
-# AI crawler detection logic
+# Crawler detection
 AI_CRAWLERS = {
     "Google-Extended": ["Google-Extended"],
     "GPTBot": ["GPTBot"],
@@ -42,34 +38,49 @@ AI_CRAWLERS = {
 }
 
 def detect_ai_crawler(user_agent: str) -> Optional[str]:
-    for crawler_name, identifiers in AI_CRAWLERS.items():
-        if any(idf in user_agent for idf in identifiers):
-            return crawler_name
+    for crawler, markers in AI_CRAWLERS.items():
+        if any(marker in user_agent for marker in markers):
+            return crawler
     return None
 
-#Routes
-@app.get("/")
-def read_root():
-    return "test read route 2"
+# Request models
+class LogEntry(BaseModel):
+    url: str
+    user_agent: str
+    access_time: datetime
+    frequency: int
+
+class LogBatch(BaseModel):
+    logs: List[LogEntry]
 
 @app.post("/logs/ingest")
-def ingest_logs(log_batch: LogBatch):
-    processed = []
+async def ingest_logs(log_batch: LogBatch, db: Session = Depends(get_db)):
+    saved = []
     for log in log_batch.logs:
         crawler = detect_ai_crawler(log.user_agent)
         if crawler:
+            db_log = CrawlerLog(
+                url=log.url,
+                user_agent=log.user_agent,
+                crawler=crawler,
+                access_time=log.access_time,
+                frequency=log.frequency
+            )
+            db.add(db_log)
+            saved.append(db_log)
+    db.commit()
 
-            # Here you would insert into DB or update counts
-            processed.append({
-                "url": log.url,
-                "crawler": crawler,
-                "access_time": log.access_time.isoformat(),
-                "frequency": log.frequency
-            })
-    if not processed:
+    if not saved:
         raise HTTPException(status_code=400, detail="No AI crawler logs found.")
-    return {"processed_logs": processed, "count": len(processed)}
+
+    # Optional: Call Claude with summary
+    summary_prompt = f"{len(saved)} logs ingested. First URL: {saved[0].url}"
+    claude_response = await call_claude(summary_prompt)
+
+    return {
+        "saved_logs": len(saved),
+        "claude_summary": claude_response.get("content", "No response from Claude.")
+    }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
+    uvicorn.run("mainBackend:app", host="0.0.0.0", port=8000, reload=True)
