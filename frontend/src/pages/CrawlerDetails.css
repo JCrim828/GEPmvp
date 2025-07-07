@@ -1,0 +1,63 @@
+
+.twoColumnContainer{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    margin-top: 35px;
+   
+}
+
+.leftContainer{
+    left: 0;
+    height: 100%;
+    width: 45%;
+    margin-left: 3%;
+    margin-right: 2%;
+}
+
+.rightContainer{
+    display: flex;
+    right: 0;
+    height: 100%;
+    width: 45%;
+    margin-left: 2%;
+    margin-right: 3%;
+}
+
+.overviewBox{
+    display: flex;
+    background-color: whitesmoke;
+    height: 210px;
+    width: 100%;
+    margin-bottom: 40px;
+    border-radius: 15px;
+    outline: 3px solid grey;
+    box-sizing: border-box;
+    padding-left: 6%;
+    padding-right: 6%;
+}
+
+.pieChartBox{
+    display: flex;
+    background-color: whitesmoke;
+    height: 330px;
+    width: 100%;
+    border-radius: 15px;
+    outline: 3px solid grey;
+    box-sizing: border-box;
+    padding-left: 6%;
+    padding-right: 6%;
+}
+
+.rawTextBox{
+    display: flex;
+    background-color: whitesmoke;
+    height: 580px;
+    width: 100%;
+    border-radius: 15px;
+    outline: 3px solid grey;
+    box-sizing: border-box;
+    padding-left: 8%;
+    padding-right: 8%;
+}
