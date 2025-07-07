@@ -1,24 +1,57 @@
 body, html {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  display: flex;
-  justify-content: center; /* center horizontally */
-  align-items: center;     /* center vertically */
   background-color: black;
 }
 
-.mainBox{
+.crawlerPage{
   display: flex;
   align-items: center;
-  width: 100%;
-  height: 100%;
+  
 }
 
-.testBox{
-  height: 90%;
-  background-color: whitesmoke;
-  padding: 10%;
+.crawlerList{
+  margin-top: 100px;
+  height: 100%;
+  width: 100%;
+  display: grid;
+  justify-items: center;
+}
+
+.crawlerHeaders {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 92%;
+  margin-bottom: 5px;
+  margin-left: 0%;
+}
+
+.crawlerHeaders > div {
   flex: 1;
-  outline: 5px solid green;
+  text-align: center;
+  font-size: 1.1rem;
+  color: white;
+  text-decoration: underline;
+  margin-left: 0.5%;
+  font-family: 'Josefin Sans', sans-serif;
+
+}
+
+.crawlerColumn {
+  text-align: left;
+  font-size: 1.1rem;
+}
+
+.crawlerHeaders > button {
+  flex: 1;
+  align-self: right;
+  text-align: center;
+  font-size: 1.4rem;
+  padding: 8px 5px;
+  cursor: pointer;
+  font-family: 'Josefin Sans', sans-serif;
+  background-color: transparent;
+  color: white;
+  border: solid black;
+  text-decoration: underline;
+  
 }

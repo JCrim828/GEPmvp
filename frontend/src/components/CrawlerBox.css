@@ -1,0 +1,56 @@
+
+.crawlerBox {
+    height: 75px;
+    width: 92%;
+    background-color: whitesmoke;
+    padding: 0%;
+    margin-top: 0px;
+    margin-left: 4%;
+    margin-right: 4%;
+    outline: 3px solid rgb(76, 70, 70);
+    border-radius: 15px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    font-family: 'Josefin Sans', sans-serif;
+    
+}
+
+/* for each column */
+.crawlerBox > div {
+    flex: 1;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.crawlerColumn {
+    text-align: left;
+    font-weight: bold;
+    font-size: 1.4rem;
+}
+
+/* align link */
+.moreColumn {
+    text-align: right;
+}
+
+.moreColumn a {
+    font-weight: bold;
+    color: black;
+    text-decoration: underline;
+}
+
+.toneDot {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+}
+
+/* tone colors */
+.green { background-color: #2ecc71; }
+.orange { background-color: #d98c00; }
+.red { background-color: #e74c3c; }
+

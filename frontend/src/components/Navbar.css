@@ -1,0 +1,20 @@
+.navbar{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(255, 255, 255);
+    padding: 0.3rem 2rem;
+    color: rgb(0, 0, 0);
+    
+}
+
+.gepLogo{
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.navLinks{
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
