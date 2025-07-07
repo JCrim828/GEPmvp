@@ -1,12 +1,15 @@
 import './App.css';
-import 'axios';
+import './api';
 
 function App() {
   return (
     <div className="App">
      <h1 color="white">Hi There</h1>
-     <div className="testBox">
-      <h1>hi</h1>
+     <div className="mainBox">
+
+      <div className=""></div>
+      <div className="testBox"></div>
+
      </div>
     </div>
   );

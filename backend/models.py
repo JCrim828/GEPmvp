@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime
-from database import Base
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean
+from database import Base, SessionLocal
 
 class CrawlerLog(Base):
     __tablename__ = "crawler_logs"
@@ -10,3 +10,4 @@ class CrawlerLog(Base):
     crawler = Column(String(2048))
     access_time = Column(DateTime)
     frequency = Column(Integer)
+    raw_text = Column(String(2048))
