@@ -6,3 +6,4 @@ python-dotenv
 httpx
 pymysql
 crawler-user-agents
+requests

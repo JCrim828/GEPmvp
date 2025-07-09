@@ -1,0 +1,38 @@
+
+.legend {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .legend-item span {
+    font-size: 23px; 
+    font-weight: bold;
+    font-family: 'Josefin Sans', sans-serif;
+  }
+  
+  .color-box {
+    width: 30px;
+    height: 30px;
+    outline: 2px solid black;
+  }
+  
+  .green {
+    background-color: #2ecc71;
+  }
+  
+  .orange {
+    background-color: #d98c00;
+  }
+  
+  .red {
+    background-color: #e74c3c;
+  }

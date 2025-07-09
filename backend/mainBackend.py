@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Tuple
@@ -9,6 +9,10 @@ from database import SessionLocal, engine
 from models import Base, CrawlerLog
 from claude_api import call_claude
 import crawleruseragents
+import requests
+import gzip
+import json
+import io
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -45,7 +49,7 @@ for entry in crawleruseragents.CRAWLER_USER_AGENTS_DATA:
         'user_agent': user_agent,
         'url': url
     }
-    
+
 #print(AI_CRAWLERS['GPTBot'])
 
 
@@ -116,6 +120,62 @@ async def get_logs(db: Session = Depends(get_db)):
 async def get_responses(db: Session=Depends(get_db)):
     responses = db.query(CrawlerLog.raw_text).all()
     return [r[0] for r in responses]
+
+@app.post("/fetch_commoncrawl")
+async def fetch_common_crawl(url: str, background_tasks: BackgroundTasks):
+    background_tasks.add_task(process_common_crawl, url)
+    return {"message": f"Started background task for {url}"}
+
+def process_common_crawl(url: str):
+    db = SessionLocal()
+    index_url = "https://index.commoncrawl.org/collinfo.json"
+    res = requests.get(index_url)
+    if res.status_code != 200:
+        print("Failed to fetch index list")
+        return
+
+    indexes = res.json()
+    latest_index = indexes[0]['cdx-api']
+    query_url = f"{latest_index}?url={url}&output=json"
+    print(f"Querying {query_url}")
+
+    entries = requests.get(query_url)
+    if entries.status_code != 200:
+        print("Failed to fetch crawl data")
+        return
+
+    for line in entries.iter_lines():
+        data = json.loads(line)
+        user_agent = data.get('user_agent', '')
+        result = detect_ai_crawler(user_agent)
+        if result:
+            print("result found")
+            crawler, crawler_url = result
+            warc_url = data['filename']
+            offset = data['offset']
+            length = data['length']
+            warc_prefix = "https://data.commoncrawl.org/"
+            full_url = f"{warc_prefix}{warc_url}"
+
+            headers = {"Range": f"bytes={offset}-{int(offset)+int(length)}"}
+            warc_res = requests.get(full_url, headers=headers)
+            if warc_res.status_code == 206:
+                try:
+                    raw = gzip.decompress(warc_res.content).decode('utf-8', errors='ignore')
+                    db_log = CrawlerLog(
+                        submitted_url=url,
+                        url=crawler_url,
+                        user_agent=user_agent,
+                        crawler=crawler,
+                        access_time=datetime.utcnow(),
+                        frequency=1,
+                        raw_text=raw[:10000]
+                    )
+                    db.add(db_log)
+                except Exception as e:
+                    print(f"Error decompressing/parsing WARC data: {e}")
+    db.commit()
+    print(f"Successfully ingested crawl data")
 
 if __name__ == "__main__":
     uvicorn.run("mainBackend:app", host="0.0.0.0", port=8000, reload=True)
