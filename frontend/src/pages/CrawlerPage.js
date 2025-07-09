@@ -1,6 +1,6 @@
 import './CrawlerPage.css';
 import '../api';
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useRef } from 'react'
 import Navbar from '../components/Navbar';
 import CrawlerBox from '../components/CrawlerBox'; 
 
@@ -8,7 +8,23 @@ const App = () => {
 
 }
 
-function crawlerPage() {
+
+function CrawlerPage() {
+
+  const [crawlers, setCrawlers] = useState([]);
+  const crawlerData = [
+      { crawler: "ChatGPT", date_accessed: "May 9 2025 : 14:55:43", frequency: 11, tone: "red" },
+      { crawler: "ChatGPT", date_accessed: "May 9 2025 : 14:55:43", frequency: 11, tone: "red" },
+      { crawler: "ChatGT", date_accessed: "May 7 2025 : 14:55:43", frequency: 19, tone: "green" },
+      { crawler: "gemini", date_accessed: "Apr 9 2020 : 14:55:43", frequency: 1, tone: "orange" }
+    ];
+  
+  useEffect(() => {
+    setCrawlers(crawlerData);
+  }, []);
+
+  
+
   return (
     <div>
       <Navbar></Navbar>
@@ -22,42 +38,16 @@ function crawlerPage() {
             <div>Tone</div>
             <button>Filter &gt;</button>
           </div>
-          <CrawlerBox
-            crawler="ClaudeBot"
-            date_accessed="May. 28 2025 : 11:22:29"
-            frequency={11}
-            tone="red"
-          />
-          <CrawlerBox
-            crawler="GPTBot"
-            date_accessed="June. 9 2025 : 14:20:59"
-            frequency={6}
-            tone="green"
-          />
-          <CrawlerBox
-            crawler="Google Gemini"
-            date_accessed="May. 20 2025 : 01:35:44"
-            frequency={8}
-            tone="orange"
-          />
-          <CrawlerBox
-            crawler="GPTBot"
-            date_accessed="May. 2 2025 : 16:20:40"
-            frequency={4}
-            tone="green"
-          />
-          <CrawlerBox
-            crawler="ClaudeBot"
-            date_accessed="May. 28 2025 : 11:22:29"
-            frequency={11}
-            tone="orange"
-          />
-          <CrawlerBox
-            crawler="ClaudeBot"
-            date_accessed="May. 28 2025 : 11:22:29"
-            frequency={11}
-            tone="green"
-          />
+
+          {crawlers.map((c, index) => (
+            <CrawlerBox
+              key={index}
+              crawler={c.crawler}
+              date_accessed={c.date_accessed}
+              frequency={c.frequency}
+              tone={c.tone}
+            />
+          ))}
 
         </div>
       </div>
@@ -65,4 +55,4 @@ function crawlerPage() {
   );
 };
 
-export default crawlerPage;
+export default CrawlerPage;

@@ -2,15 +2,15 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from datetime import datetime
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 from models import Base, CrawlerLog
 from claude_api import call_claude
+import crawleruseragents
 
 Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
 
 origins = [
@@ -26,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dependency
+#dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -34,13 +34,20 @@ def get_db():
     finally:
         db.close()
 
-# Crawler detection
-AI_CRAWLERS = {
-    "Google-Extended": ["Google-Extended"],
-    "GPTBot": ["GPTBot"],
-    "PerplexityBot": ["PerplexityBot"],
-    "jackC": ["JackCriminger"] #for testing purposes
-}
+#crawler dictionary
+AI_CRAWLERS = {}
+for entry in crawleruseragents.CRAWLER_USER_AGENTS_DATA:
+    name = entry['pattern'].rstrip('\\/')
+    user_agent = entry['instances'][0] if entry['instances'] else ''
+    url = entry.get('url', '')
+
+    AI_CRAWLERS[name] = {
+        'user_agent': user_agent,
+        'url': url
+    }
+    
+#print(AI_CRAWLERS['GPTBot'])
+
 
 # Request models
 class LogEntry(BaseModel):
@@ -54,22 +61,26 @@ class LogEntry(BaseModel):
 class LogBatch(BaseModel):
     logs: List[LogEntry]
 
-def detect_ai_crawler(user_agent: str) -> Optional[str]:
-    for crawler, markers in AI_CRAWLERS.items():
-        if any(marker in user_agent for marker in markers):
-            return crawler
+def detect_ai_crawler(user_agent: str) -> Optional[Tuple[str, str]]:
+    for pattern, info in AI_CRAWLERS.items():
+        if pattern in user_agent:
+            return pattern, info.get('url', '')
     return None
+
+@app.get("/crawlers")
+def get_all_crawlers():
+    return AI_CRAWLERS
 
 @app.post("/logs/ingest")
 async def ingest_logs(log_batch: LogBatch, db: Session = Depends(get_db)):
     saved = []
     for log in log_batch.logs:
-        crawler = detect_ai_crawler(log.user_agent)
+        crawler, crawler_url = detect_ai_crawler(log.user_agent)
         if crawler:
             db_log = CrawlerLog(
-                url=log.url,
+                url=crawler_url, #crawler url
                 user_agent=log.user_agent,
-                crawler=crawler,
+                crawler=crawler,  #crawler name
                 access_time=log.access_time,
                 frequency=log.frequency,
                 raw_text=log.raw_text
@@ -81,7 +92,6 @@ async def ingest_logs(log_batch: LogBatch, db: Session = Depends(get_db)):
     if not saved:
         raise HTTPException(status_code=400, detail="No AI crawler logs found.")
 
-    # Optional: Call Claude with summary
     summary_prompt = f"{len(saved)} logs ingested. First URL: {saved[0].url}"
     claude_response = await call_claude(summary_prompt)
 
