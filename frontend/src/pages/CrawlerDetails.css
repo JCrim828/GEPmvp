@@ -31,8 +31,49 @@
     margin-right: 3%;
 }
 
+.overviewHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .leftContainerMini {
+    width: 45%;
+    text-align: left;
+  }
+
+  .leftContainerMini h1{
+    font-size: 45px;
+  }
+
+  .rightContainerMini {
+    width: 45%;
+    text-align: right;
+    margin-right: 10%;
+    margin-top: 7%;
+  }
+
+  .rightContainerMini a{
+    font-family: 'Josefin Sans', sans-serif;
+    text-align: center;
+    margin-right: 5%;
+    font-size: 22px;
+    color: #1142BC;
+  }
+  
+  .overviewBody {
+    width: 100%;
+    margin-top: 0px;
+    text-align: left;
+    font-size: 20px;
+    font-family: 'Josefin Sans', sans-serif;
+  }
+
 .overviewBox{
     display: flex;
+    flex-direction: column;      
+    overflow-wrap: break-word;
+    word-break: break-word;
     background-color: whitesmoke;
     height: 210px;
     width: 100%;
@@ -58,7 +99,10 @@
 }
 
 .rawTextBox{
-    display: flex;
+    display: block;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
     background-color: whitesmoke;
     height: 580px;
     width: 100%;
@@ -67,12 +111,23 @@
     box-sizing: border-box;
     padding-left: 8%;
     padding-right: 8%;
+    overflow-y: auto;
+}
+
+.rawTextBox h1{
+    margin-top: 7%;
+    margin-bottom: 0;
+}
+
+.rawTextBox p{
+    padding-top: 4%;
 }
 
 .pie {
     position: absolute;
     margin-right: 12%;
     margin-bottom: 10%;
+    margin-left: 20%;
 }
 
 .legendContainer {
@@ -81,10 +136,29 @@
     left: 5%;
     height: 80px;
     width: 150px;
+    margin-right: 10%;
 }
 
 .toneHeader {
     position: absolute;
-    left: 5%;
+    left: 12%;
     top: 1%;
+
 }
+
+.pieLogo {
+    position: absolute;
+    left: 3.5%;
+    top: 8%;
+    width: 50px;
+    height: 50px;
+    color: black;
+}
+
+.overviewBox h1 {
+    margin-bottom: 0.2em; /* reduce space below headers */
+  }
+  
+  .overviewBox p {
+    margin-top: 0.6em; /* reduce space above paragraph */
+  }

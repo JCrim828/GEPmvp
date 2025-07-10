@@ -11,10 +11,13 @@
 .gepLogo{
     font-size: 1rem;
     font-weight: bold;
+    font-family: 'Josefin Sans', sans-serif;
 }
 
 .navLinks{
     list-style: none;
     display: flex;
     gap: 1.5rem;
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: bold;
 }

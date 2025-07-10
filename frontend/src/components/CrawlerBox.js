@@ -11,7 +11,7 @@ const CrawlerBox = ({ crawler, date_accessed, frequency, tone }) => {
                 <span className={`toneDot ${tone}`}></span>
             </div>
             <div className='moreColumn'>
-                <a href="#">More &gt;</a>
+                <a href="/details">More &gt;</a>
             </div>
         </div>
     );

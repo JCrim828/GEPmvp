@@ -10,6 +10,8 @@ const MyPieChart = ({greenPercent, redPercent, orangePercent}) => (
             { title: 'Orange', value: orangePercent, color: '#d98c00' },
             { title: 'Red', value: redPercent, color: '#e74c3c' },
             ]}
+            animate
+            viewBoxSize={[100, 100]}
         />
     </div>
 );
