@@ -16,11 +16,11 @@ function CrawlerPage() {
       { crawler: "ChatGPT", date_accessed: "May 9 2025 : 14:55:43", frequency: 11, tone: "red" },
       { crawler: "ChatGPT", date_accessed: "May 9 2025 : 14:55:43", frequency: 11, tone: "red" },
       { crawler: "ChatGT", date_accessed: "May 7 2025 : 14:55:43", frequency: 19, tone: "green" },
-      { crawler: "gemini", date_accessed: "Apr 9 2020 : 14:55:43", frequency: 1, tone: "orange" }, 
+      { crawler: "Gemini", date_accessed: "Apr 9 2020 : 14:55:43", frequency: 1, tone: "orange" }, 
       { crawler: "ChatGPT", date_accessed: "May 9 2025 : 14:55:43", frequency: 11, tone: "red" },
       { crawler: "ChatGPT", date_accessed: "May 9 2025 : 14:55:43", frequency: 11, tone: "red" },
       { crawler: "ChatGT", date_accessed: "May 7 2025 : 14:55:43", frequency: 19, tone: "green" },
-      { crawler: "gemini", date_accessed: "Apr 9 2020 : 14:55:43", frequency: 1, tone: "orange" }
+      { crawler: "Gemini", date_accessed: "Apr 9 2020 : 14:55:43", frequency: 1, tone: "orange" }
     ];
   
   useEffect(() => {

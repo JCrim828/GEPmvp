@@ -7,3 +7,4 @@ httpx
 pymysql
 crawler-user-agents
 requests
+boto3

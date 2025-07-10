@@ -13,6 +13,10 @@ import requests
 import gzip
 import json
 import io
+import time
+import boto3
+from botocore import UNSIGNED
+from botocore.config import Config
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -126,56 +130,80 @@ async def fetch_common_crawl(url: str, background_tasks: BackgroundTasks):
     background_tasks.add_task(process_common_crawl, url)
     return {"message": f"Started background task for {url}"}
 
+def sort_commoncrawl_collections(collections):
+    def extract_sort_key(item):
+        name = item.get("id", "")
+        parts = name.split("-")
+        if len(parts) != 3:
+            return (0, 0)
+        try:
+            year = int(parts[2][:4])
+            batch = int(parts[2][4:])
+            return (year, batch)
+        except:
+            return (0, 0)
+    return sorted(collections, key=extract_sort_key, reverse=True)
+
 def process_common_crawl(url: str):
     db = SessionLocal()
-    index_url = "https://index.commoncrawl.org/collinfo.json"
-    res = requests.get(index_url)
-    if res.status_code != 200:
-        print("Failed to fetch index list")
-        return
+    try:
+        #get all collections and sort by most recent
+        index_list_url = "https://index.commoncrawl.org/collinfo.json"
+        res = requests.get(index_list_url)
+        if res.status_code != 200:
+            print("Failed to fetch index list")
+            return
 
-    indexes = res.json()
-    latest_index = indexes[0]['cdx-api']
-    query_url = f"{latest_index}?url={url}&output=json"
-    print(f"Querying {query_url}")
+        all_indexes = res.json()
+        sorted_indexes = sort_commoncrawl_collections(all_indexes)
 
-    entries = requests.get(query_url)
-    if entries.status_code != 200:
-        print("Failed to fetch crawl data")
-        return
+        for index in sorted_indexes[:8]:
+            query_url = f"{index['cdx-api']}?url={url}&output=json"
+            print(f"Querying: {query_url}")
+            entries = requests.get(query_url)
+            if entries.status_code != 200:
+                continue
 
-    for line in entries.iter_lines():
-        data = json.loads(line)
-        user_agent = data.get('user_agent', '')
-        result = detect_ai_crawler(user_agent)
-        if result:
-            print("result found")
-            crawler, crawler_url = result
-            warc_url = data['filename']
-            offset = data['offset']
-            length = data['length']
-            warc_prefix = "https://data.commoncrawl.org/"
-            full_url = f"{warc_prefix}{warc_url}"
+            any_found = False
+            for line in entries.iter_lines():
+                data = json.loads(line)
+                user_agent = data.get('user_agent', '')
+                result = detect_ai_crawler(user_agent)
+                if result:
+                    crawler, crawler_url = result
+                    warc_url = data['filename']
+                    offset = data['offset']
+                    length = data['length']
+                    warc_prefix = "https://data.commoncrawl.org/"
+                    full_url = f"{warc_prefix}{warc_url}"
 
-            headers = {"Range": f"bytes={offset}-{int(offset)+int(length)}"}
-            warc_res = requests.get(full_url, headers=headers)
-            if warc_res.status_code == 206:
-                try:
-                    raw = gzip.decompress(warc_res.content).decode('utf-8', errors='ignore')
-                    db_log = CrawlerLog(
-                        submitted_url=url,
-                        url=crawler_url,
-                        user_agent=user_agent,
-                        crawler=crawler,
-                        access_time=datetime.utcnow(),
-                        frequency=1,
-                        raw_text=raw[:10000]
-                    )
-                    db.add(db_log)
-                except Exception as e:
-                    print(f"Error decompressing/parsing WARC data: {e}")
-    db.commit()
-    print(f"Successfully ingested crawl data")
+                    headers = {"Range": f"bytes={offset}-{int(offset)+int(length)}"}
+                    warc_res = requests.get(full_url, headers=headers)
+                    if warc_res.status_code == 206:
+                        try:
+                            raw = gzip.decompress(warc_res.content).decode('utf-8', errors='ignore')
+                            db_log = CrawlerLog(
+                                submitted_url=url,
+                                url=crawler_url,
+                                user_agent=user_agent,
+                                crawler=crawler,
+                                access_time=datetime.utcnow(),
+                                frequency=1,
+                                raw_text=raw[:10000]
+                            )
+                            db.add(db_log)
+                            any_found = True
+                        except Exception as e:
+                            print(f"Error decompressing/parsing WARC data: {e}")
+            if any_found:
+                db.commit()
+                print("Successfully ingested crawl data")
+                return  # Exit early once data is found
+
+        print("No crawl entries found in recent indexes")
+
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     uvicorn.run("mainBackend:app", host="0.0.0.0", port=8000, reload=True)
